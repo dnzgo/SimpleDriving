@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using System;
+
 
 public class MainMenu : MonoBehaviour
 {
@@ -11,6 +10,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] TMP_Text energyText;
     [SerializeField] private int maxEnergy;
     [SerializeField] private int energyRechargeDuration;
+    [SerializeField] AndroidNotificationHandler androidNotificationHandler;
 
     private int energy;
 
@@ -24,6 +24,12 @@ public class MainMenu : MonoBehaviour
 
         energy = PlayerPrefs.GetInt(energyKey, maxEnergy);
 
+        
+
+    }
+
+    private void Update()
+    {
         if (energy == 0)
         {
             string energyReadyString = PlayerPrefs.GetString(energyReadyKey, string.Empty);
@@ -40,7 +46,6 @@ public class MainMenu : MonoBehaviour
             }
 
         }
-
         energyText.text = $"Energy: {energy}";
 
     }
@@ -54,8 +59,12 @@ public class MainMenu : MonoBehaviour
 
         if (energy == 0)
         {
-            DateTime energyReady = DateTime.Now.AddMinutes(1);
+            DateTime energyReady = DateTime.Now.AddMinutes(energyRechargeDuration);
             PlayerPrefs.SetString(energyReadyKey, energyReady.ToString());
+#if UNITY_ANDROID
+            androidNotificationHandler.ScheduleNotification(energyReady);
+#endif
+
         }
 
         SceneManager.LoadScene(1);
